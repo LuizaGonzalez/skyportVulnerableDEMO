@@ -1,5 +1,5 @@
 """
-skyport-vulnerable-demo
+skayway-vulnerable-demo
 Aplicación de demostración con fallas de seguridad INTENCIONALES,
 creada para el ejercicio EX·04 (Laboratorio 04 - DevSecOps/SAST), de la asignatura
 Fundamentos y Seguridad de la Informacion de la Escuela Colombiana De Ingenieria Julio Garavito,
@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify, send, _file
 
 app = Flask(__name__)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "skyport.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "skayway.db")
 BOARDING_PASSES_DIR = os.path.join(os.path.dirname(__file__), "boarding_passes")
 
 def get_db():
@@ -40,7 +40,7 @@ def init_db():
 
 @app.route("/", methods=["GET"])
 def index():
-    return jsonify({"service": "skyport-demo", "status": "running"})
+    return jsonify({"service": "skayway-demo", "status": "running"})
 
 @app.route("/login", methods=["POST"])
 def login():
