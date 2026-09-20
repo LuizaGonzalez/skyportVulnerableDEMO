@@ -50,7 +50,7 @@ def login():
 
     query = (
             "SELECT * FROM passengers WHERE email = '" + email + "' "
-                                                                 "AND password_hash = '" + password_hash + "'"
+            "AND password_hash = '" + password_hash + "'"
     )
     conn = get_db()
     cur = conn.execute(query)
@@ -76,6 +76,12 @@ def register():
     conn.commit()
     conn.close()
     return jsonify({"status": "ok"})
+
+@app.route("/flights/weather", methods=["GET"])
+def flight_weather():
+    airport_code = request.args.get("airport", "SKP")
+    result = os.popen(f"curl -s 'https://wttr.in/{airport_code}?format=3'").read()
+    return jsonify({"output": result})
 
 if __name__ == "__main__":
     init_db()
