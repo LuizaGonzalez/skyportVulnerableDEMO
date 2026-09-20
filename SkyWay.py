@@ -16,7 +16,7 @@ from flask import Flask, request, jsonify, send, _file
 app = Flask(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "skyport.db")
-
+BOARDING_PASSES_DIR = os.path.join(os.path.dirname(__file__), "boarding_passes")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -82,6 +82,19 @@ def flight_weather():
     airport_code = request.args.get("airport", "SKP")
     result = os.popen(f"curl -s 'https://wttr.in/{airport_code}?format=3'").read()
     return jsonify({"output": result})
+
+@app.route("/boarding-pass/<path:filename>", methods=["GET"])
+def get_boarding_pass(filename):
+    file_path = os.path.join(BOARDING_PASSES_DIR, filename)
+    return send_file(file_path)
+
+
+@app.route("/flights", methods=["GET"])
+def list_flights():
+    conn = get_db()
+    flights = conn.execute("SELECT * FROM flights").fetchall()
+    conn.close()
+    return jsonify([dict(f) for f in flights])
 
 if __name__ == "__main__":
     init_db()
