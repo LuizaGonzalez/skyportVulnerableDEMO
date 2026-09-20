@@ -42,6 +42,40 @@ def init_db():
 def index():
     return jsonify({"service": "skyport-demo", "status": "running"})
 
+@app.route("/login", methods=["POST"])
+def login():
+    email = request.form.get("email", "")
+    password = request.form.get("password", "")
+    password_hash = hashlib.md5(password.encode()).hexdigest()
+
+    query = (
+            "SELECT * FROM passengers WHERE email = '" + email + "' "
+                                                                 "AND password_hash = '" + password_hash + "'"
+    )
+    conn = get_db()
+    cur = conn.execute(query)
+    passenger = cur.fetchone()
+    conn.close()
+
+    if passenger:
+        return jsonify({"status": "ok", "passenger": passenger["email"]})
+    return jsonify({"status": "error", "message": "Credenciales inválidas"}), 401
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    email = request.form.get("email", "")
+    password = request.form.get("password", "")
+    password_hash = hashlib.md5(password.encode()).hexdigest()
+
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO passengers (email, password_hash) VALUES (?, ?)",
+        (email, password_hash),
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     init_db()
