@@ -10,9 +10,10 @@ Tema: sistema de gestión de vuelos y pasajeros de un aeropuerto ficticio.
 
 import hashlib
 import os
+import re
 import sqlite3
-import subprocess
 
+import requests
 from flask import Flask, request, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -93,13 +94,18 @@ def register():
 def flight_weather():
     airport_code = request.args.get("airport", "SKP")
 
-    # CWE-78 (fix): ya no se arma un comando de shell con input del usuario
-    # (os.popen(f"curl ...")). Se usa la librería requests, que hace la
-    # petición HTTP directamente sin pasar por el intérprete de comandos.
-    import requests
+    # CWE-20 (fix): se valida el formato del código de aeropuerto (solo
+    # letras/dígitos, longitud típica IATA/ICAO) antes de usarlo para
+    # construir la URL. Esto cierra el hallazgo "API Traversal via
+    # unsanitized user input" que Sonar detectó tras el fix anterior:
+    # sin esta validación, el usuario podría inyectar segmentos de ruta
+    # o manipular la URL de destino de la petición saliente.
+    if not re.fullmatch(r"[A-Za-z0-9]{2,10}", airport_code):
+        return jsonify({"status": "error", "message": "Código de aeropuerto inválido"}), 400
+
     try:
         resp = requests.get(
-            f"https://wttr.in/{airport_code}",
+            "https://wttr.in/" + airport_code,
             params={"format": "3"},
             timeout=5,
         )
